@@ -1,10 +1,18 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { SessionContext } from "../SessionProvider";
 import { SideMenu } from "../components/SideMenu";
+import { postRepository } from "../repositories/post";
 
 const Home = () => {
   const { currentUser } = useContext(SessionContext);
+  const [content, setContent] = useState("");
+
+  const createPost = async () => {
+    const post = await postRepository.create(content, currentUser.id);
+    console.log(post);
+    setContent("");
+  };
 
   if (currentUser == null) {
     return <Navigate replace to="/signin" />;
@@ -25,8 +33,14 @@ const Home = () => {
               <textarea
                 className="w-full p-2 mb-4 border-2 border-gray-200 rounded-md"
                 placeholder="What's on your mind?"
+                onChange={(e) => setContent(e.target.value)}
+                value={content}
               />
-              <button className="bg-[#34D399] text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button
+                className="bg-[#34D399] text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={createPost}
+                disabled={content === ""}
+              >
                 Post
               </button>
             </div>
