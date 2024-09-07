@@ -1,17 +1,46 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { SessionContext } from "../SessionProvider";
 import { SideMenu } from "../components/SideMenu";
+import { Post } from "../components/Post";
 import { postRepository } from "../repositories/post";
+import { Pagination } from "../components/Pagebation";
 
 const Home = () => {
   const { currentUser } = useContext(SessionContext);
   const [content, setContent] = useState("");
+  const [posts, setPosts] = useState([]);
+  const [page, setPage] = useState(1);
+  const limit = 5;
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   const createPost = async () => {
     const post = await postRepository.create(content, currentUser.id);
-    console.log(post);
+    setPosts([
+      { ...post, userId: currentUser.id, userName: currentUser.userName },
+      ...posts,
+    ]);
     setContent("");
+  };
+
+  const fetchPosts = async (page) => {
+    const posts = await postRepository.find(page, limit);
+    setPosts(posts);
+  };
+
+  const moveToNextPage = async () => {
+    const nextPage = page + 1;
+    await fetchPosts(nextPage);
+    setPage(nextPage);
+  };
+
+  const moveToPrevPage = async () => {
+    const prevPage = page - 1;
+    await fetchPosts(prevPage);
+    setPage(prevPage);
   };
 
   if (currentUser == null) {
@@ -44,7 +73,15 @@ const Home = () => {
                 Post
               </button>
             </div>
-            <div className="mt-4"></div>
+            <div className="mt-4">
+              {posts.map((post) => (
+                <Post key={post.id} post={post} />
+              ))}
+            </div>
+            <Pagination
+              onPrev={page > 1 ? moveToPrevPage : null}
+              onNext={posts.length >= limit ? moveToNextPage : null}
+            />
           </div>
           <SideMenu />
         </div>
