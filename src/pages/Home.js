@@ -43,6 +43,11 @@ const Home = () => {
     setPage(prevPage);
   };
 
+  const deletePost = async (postId) => {
+    await postRepository.delete(postId);
+    setPosts(posts.filter((post) => post.id !== postId));
+  }
+
   if (currentUser == null) {
     return <Navigate replace to="/signin" />;
   }
@@ -75,7 +80,7 @@ const Home = () => {
             </div>
             <div className="mt-4">
               {posts.map((post) => (
-                <Post key={post.id} post={post} />
+                <Post key={post.id} post={post} onDelete={deletePost} />
               ))}
             </div>
             <Pagination
